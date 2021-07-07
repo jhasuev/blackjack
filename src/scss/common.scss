@@ -1,0 +1,24 @@
+body {
+  font: 18px "Trebuchet MS";
+  user-select: none;
+}
+
+.btn {
+  border-radius: 10px;
+  padding: 10px;
+  display: inline-block;
+  width: 100%;
+  min-width: 100px;
+  background-color: #D0A056;
+  font-size: 27px;
+  cursor: pointer;
+  border: 5px solid #8f6525;
+  color: #FDF4DE;
+
+  &:hover {
+    opacity: 0.9;
+  }
+  &:active {
+    opacity: 0.8;
+  }
+}
