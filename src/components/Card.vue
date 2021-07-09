@@ -1,7 +1,13 @@
 <template>
-  <div class="card" :style="getStyles" ref="card">
-    <img v-if="card.name != 'Back'" :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
-    <img v-else :src="require(`@/assets/img/Back_black.png`)" class="img">
+  <div class="card" :class="{opened: !card.opened}" :style="getStyles" ref="card">
+    <div class="content">
+      <div class="front">
+        <img :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
+      </div>
+      <div class="back">
+        <img src="@/assets/img/Back_black.png" class="img">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -47,6 +53,8 @@
 
 <style lang="scss" scoped>
   .card {
+    perspective: 500px;
+
     position: relative;
     width: 120px;
     height: 170.38px;
@@ -55,8 +63,37 @@
     transition: .5s;
   }
 
+  .content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    transition: transform 1s;
+    transform-style: preserve-3d;
+  }
+
+  .card.opened .content {
+    transform: rotateY( 180deg ) ;
+    transition: transform 0.5s;
+  }
+
+  .front,
+  .back {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    border-radius: 5px;
+    backface-visibility: hidden;
+  }
+
+  .back {
+    transform: rotateY( 180deg );
+  }
+
   .img {
+    position: absolute;
     width: 100%;
     height: 100%;
   }
+
 </style>

@@ -63,7 +63,12 @@
         if (this.cards.length) {
           const card = this.cards[this.cards.length - 1]
           card.position = this.getCardPosition(card)
-          this[player].push(this.cards.pop())
+          this[player].push(card)
+          --this.cards.length
+
+          setTimeout(() => {
+            card.opened = true
+          }, 500);
         }
       },
 
@@ -76,6 +81,7 @@
         cards.forEach((card, idx) => {
           card.score = getCardScore(this.getCards, card.name)
           card.id = idx
+          card.opened = false
         })
         return cards.sort(() => Math.random() - .5)
       },
