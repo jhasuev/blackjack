@@ -2,17 +2,17 @@
   <div class="app">
     <div class="game">
       
-      <Player class="player" />
-      <Player class="player" />
+      <Player class="player" title="Dealer hand" :cards="enemy" />
+      <Player class="player" title="Player hand" :cards="player" />
 
     </div>
 
     <div class="sidebar">
-      <Cards />
+      <Cards :cards="cards" />
 
       <div class="actions">
         <div class="actions__item">
-          <button class="btn" @click="turn">Hit</button>
+          <button class="btn" @click="hit">Hit</button>
         </div>
         <div class="actions__item">
           <button class="btn">Stand</button>
@@ -24,6 +24,8 @@
 </template>
 
 <script>
+  import { getCardScore } from "./helpers"
+  import { mapGetters } from "vuex"
   import Cards from "./components/Cards"
   import Player from "./components/Player"
   export default {
@@ -34,21 +36,48 @@
     },
     data(){
       return {
-        enemy: [
-          {
-            card: "Pikes_7",
-          }
-        ],
+        cards: [],
+        enemy: [],
+        player: [],
       }
     },
 
+    computed: {
+      ...mapGetters([
+        'getCards',
+      ]),
+    },
+
+    mounted(){
+      this.cards = this.getGenerateCards()
+      // console.log(this.cards)
+    },
+
     methods: {
-      turn(){
-        if (this.enemy[0].card == "Back") {
-          this.enemy[0].card = "Pikes_7"
-        } else {
-          this.enemy[0].card = "Back"
+      hit(){
+        this.giveCardTo("enemy")
+        this.giveCardTo("player")
+      },
+
+      giveCardTo(player){
+        if (this.cards.length) {
+          const card = this.cards[this.cards.length - 1]
+          card.position = this.getCardPosition(card)
+          this[player].push(this.cards.pop())
         }
+      },
+
+      getCardPosition(card){
+        return document.querySelector(`.js-card-${card.id}`).getBoundingClientRect()
+      },
+
+      getGenerateCards(){
+        const cards = JSON.parse(JSON.stringify(this.getCards))
+        cards.forEach((card, idx) => {
+          card.score = getCardScore(this.getCards, card.name)
+          card.id = idx
+        })
+        return cards.sort(() => Math.random() - .5)
       },
     },
   }

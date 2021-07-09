@@ -1,14 +1,14 @@
 <template>
   <div class="cards">
     <Card
-      v-for="i in 52"
+      v-for="(card, i) in cards"
       :key="i"
       :style="{
         marginTop: `${i}px`,
         marginLeft: `${i}px`,
       }"
-      name="Back"
-      class="cards__item  card"
+      :card="card"
+      :class="`cards__item  js-card-${card.id}`"
     />
   </div>
 </template>
@@ -19,6 +19,9 @@
     name: 'Cards',
     components: {
       Card,
+    },
+    props: {
+      cards: { type: Array, default: () => [] },
     },
   }
 </script>

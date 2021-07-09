@@ -1,10 +1,10 @@
 <template>
   <div class="player">
     <div class="player__cards">
-      <Card v-for="(card, i) in cards" :key="i" :name="card.card" class="player__cards-item" />
+      <Card v-for="(card, i) in cards" :key="i" :card="card" class="player__cards-item" />
     </div>
     <div class="player__info">
-      Dealer hand: 5
+      {{ title }}: {{ getCardsSum }}
     </div>
   </div>
 </template>
@@ -16,18 +16,18 @@
     components: {
       Card,
     },
-    data() {
-      return {
-        cards: [
-          {
-            card: "Pikes_7",
-          },
-          {
-            card: "Pikes_5",
-          },
-        ],
+    props: {
+      title: { type: String, default: "" },
+      cards: { type: Array, default: () => [] },
+    },
+    computed: {
+      getCardsSum(){
+        return this.cards.reduce((acc, card) => acc + card.score, 0)
       }
     },
+    mounted() {
+      // console.log(this.cards)
+    }
   }
 </script>
 
@@ -37,24 +37,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 170.38px;
     
     & + & {
       margin-top: 150px;
     }
 
     &__cards {
-      font-size: 0;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      padding-left: 93px;
 
       &-item {
         filter: drop-shadow(0 0 3px rgba(255,255,255,.3));
-
-        & + & {
-          margin-left: -80px;
-        }
+        margin-left: -93px;
       }
     }
 
     &__info {
+      padding-left: 30px;
       font-size: 27px;
     }
   }
