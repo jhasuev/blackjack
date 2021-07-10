@@ -1,29 +1,32 @@
 <template>
-  <div class="card" :class="{opened: !card.opened}" :style="getStyles" ref="card">
-    <div class="scores" v-if="canShowScores">
-      <button
-        v-for="(score, i) in card.scores"
-        :key="i"
-        :class="['scores__item', {
-          'scores__item--active': score == card.score
-        }]"
-        @click="$emit('setScore', score)"
-      >{{ score }}</button>
-    </div>
-    <div class="content">
-      <div class="front">
-        <img :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
+  <Flipper :opened="card.opened" ref="card" :style="getStyles">
+    <template v-slot:front>
+      <div class="scores" v-if="canShowScores">
+        <button
+          v-for="(score, i) in card.scores"
+          :key="i"
+          :class="['scores__item', {
+            'scores__item--active': score == card.score
+          }]"
+          @click="$emit('setScore', score)"
+        >{{ score }}</button>
       </div>
-      <div class="back">
-        <img src="@/assets/img/Back_black.png" class="img">
-      </div>
-    </div>
-  </div>
+
+      <img :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
+    </template>
+    <template v-slot:back>
+      <img src="@/assets/img/Back_black.png" class="img">
+    </template>
+  </Flipper>
 </template>
 
 <script>
+  import Flipper from "./Flipper"
   export default {
     name: "Card",
+    components: {
+      Flipper,
+    },
     props: {
       card: { type: Object, default: () => ({}) },
     },
@@ -49,7 +52,7 @@
     },
     mounted(){
       if (this.card.position) {
-        const to = this.$refs.card.getBoundingClientRect()
+        const to = this.$refs.card.$el.getBoundingClientRect()
 
         this.position = {
           top: this.card.position.y - to.y,
@@ -67,12 +70,6 @@
 
 <style lang="scss" scoped>
   .card {
-    perspective: 500px;
-
-    position: relative;
-    width: 120px;
-    height: 170.38px;
-    font-size: 0;
     transition: .5s;
   }
 
@@ -101,33 +98,6 @@
         cursor: default;
       }
     }
-  }
-
-  .content {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-
-    transition: transform 1s;
-    transform-style: preserve-3d;
-  }
-
-  .card.opened .content {
-    transform: rotateY( 180deg ) ;
-    transition: transform 0.5s;
-  }
-
-  .front,
-  .back {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    border-radius: 5px;
-    backface-visibility: hidden;
-  }
-
-  .back {
-    transform: rotateY( 180deg );
   }
 
   .img {
