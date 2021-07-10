@@ -3,7 +3,7 @@
     <div class="game">
       
       <Player class="player" title="Dealer hand" :cards="enemy" />
-      <Player class="player" title="Player hand" :cards="player" />
+      <Player class="player" title="Player hand" :cards="player" @setScore="setScore" />
 
     </div>
 
@@ -150,6 +150,10 @@
           card.opened = false
         })
         this.cards = cards.sort(() => Math.random() - .5)
+      },
+      
+      setScore({card, score}){
+        card.score = score
       },
     },
   }

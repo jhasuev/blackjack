@@ -1,7 +1,13 @@
 <template>
   <div class="player">
     <div class="player__cards">
-      <Card v-for="(card, i) in cards" :key="i" :card="card" class="player__cards-item" />
+      <Card
+        v-for="(card, i) in cards"
+        :key="i"
+        :card="card"
+        @setScore="$emit('setScore', {card, score: $event})"
+        class="player__cards-item"
+      />
     </div>
     <div class="player__info">
       {{ title }}: {{ getCardsSum }}

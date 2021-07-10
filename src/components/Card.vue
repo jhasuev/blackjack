@@ -1,5 +1,15 @@
 <template>
   <div class="card" :class="{opened: !card.opened}" :style="getStyles" ref="card">
+    <div class="scores" v-if="canShowScores">
+      <button
+        v-for="(score, i) in card.scores"
+        :key="i"
+        :class="['scores__item', {
+          'scores__item--active': score == card.score
+        }]"
+        @click="$emit('setScore', score)"
+      >{{ score }}</button>
+    </div>
     <div class="content">
       <div class="front">
         <img :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
@@ -23,6 +33,10 @@
       }
     },
     computed: {
+      canShowScores(){
+        return this.card.scores.length > 1 && this.card.opened
+      },
+
       getStyles(){
         if(this.position) {
           return {
@@ -59,8 +73,34 @@
     width: 120px;
     height: 170.38px;
     font-size: 0;
-
     transition: .5s;
+  }
+
+  .scores {
+    position: absolute;
+    z-index: 9;
+    top: 50%;
+    left: 4px;
+    transform: translateY(-50%);
+    &__item {
+      display: block;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      border-radius: 50%;
+      font-size: 10px;
+      background-color: #333;
+      
+      margin-bottom: 10px;
+      opacity: .5;
+      cursor: pointer;
+
+      &--active {
+        opacity: 1;
+        cursor: default;
+      }
+    }
   }
 
   .content {
