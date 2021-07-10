@@ -42,10 +42,10 @@
           left: this.card.position.x - to.x,
         }
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           this.position.top = 0
           this.position.left = 0
-        });
+        })
       }
     },
   }

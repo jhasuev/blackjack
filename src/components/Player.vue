@@ -25,9 +25,6 @@
         return this.cards.reduce((acc, card) => acc + card.score, 0)
       }
     },
-    mounted() {
-      // console.log(this.cards)
-    }
   }
 </script>
 
