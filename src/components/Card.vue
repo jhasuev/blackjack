@@ -1,23 +1,25 @@
 <template>
-  <Flipper :opened="card.opened" ref="card" :style="getStyles">
-    <template v-slot:front>
-      <div class="scores" v-if="canShowScores">
-        <button
-          v-for="(score, i) in card.scores"
-          :key="i"
-          :class="['scores__item', {
-            'scores__item--active': score == card.score
-          }]"
-          @click="$emit('setScore', score)"
-        >{{ score }}</button>
-      </div>
+  <div :style="getStyle">
+    <Flipper :opened="card.opened">
+      <template v-slot:front>
+        <div class="scores" v-if="canShowScores">
+          <button
+            v-for="(score, i) in card.scores"
+            :key="i"
+            :class="['scores__item', {
+              'scores__item--active': score == card.score
+            }]"
+            @click="$emit('setScore', score)"
+          >{{ score }}</button>
+        </div>
 
-      <img :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
-    </template>
-    <template v-slot:back>
-      <img src="@/assets/img/Back_black.png" class="img">
-    </template>
-  </Flipper>
+        <img :src="require(`@/assets/img/${card.name}_black.png`)" class="img">
+      </template>
+      <template v-slot:back>
+        <img src="@/assets/img/Back_black.png" class="img">
+      </template>
+    </Flipper>
+  </div>
 </template>
 
 <script>
@@ -32,7 +34,11 @@
     },
     data(){
       return {
-        position: null,
+        position: {
+          top: 0,
+          left: 0,
+        },
+        transition: 0,
       }
     },
     computed: {
@@ -40,28 +46,35 @@
         return this.card.scores.length > 1 && this.card.opened
       },
 
-      getStyles(){
-        if(this.position) {
-          return {
-            "top": `${this.position.top}px`,
-            "left": `${this.position.left}px`,
-          }
+      getStyle(){
+        return {
+          "transition": `${ this.transition }s`,
+          "transform": `translate(${ this.position.left }px, ${ this.position.top }px)`,
         }
-        return null
       },
     },
+
     mounted(){
       if (this.card.position) {
-        const to = this.$refs.card.$el.getBoundingClientRect()
+        this.setPosition()
+      }
+    },
 
-        this.position = {
-          top: this.card.position.y - to.y,
-          left: this.card.position.x - to.x,
-        }
+    methods: {
+      setPosition() {
+        const to = this.$el.getBoundingClientRect()
+        const top = this.card.position.y - to.y
+        const left = this.card.position.x - to.x
+        
+        this.position.top = top
+        this.position.left = left
 
-        requestAnimationFrame(() => {
-          this.position.top = 0
-          this.position.left = 0
+        this.$nextTick(() => {
+          setTimeout(() => {
+            this.transition = .5
+            this.position.top = 0
+            this.position.left = 0
+          }, 100);
         })
       }
     },
@@ -69,9 +82,6 @@
 </script>
 
 <style lang="scss" scoped>
-  .card {
-    transition: .5s;
-  }
 
   .scores {
     position: absolute;
@@ -104,6 +114,16 @@
     position: absolute;
     width: 100%;
     height: 100%;
+  }
+
+  @media screen and (max-width: 900px) {
+    .scores {
+      left: 0;
+
+      &__item {
+        margin-bottom: 5px;
+      }
+    }
   }
 
 </style>

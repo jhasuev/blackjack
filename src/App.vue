@@ -1,30 +1,37 @@
 <template>
   <div class="app">
     <div class="game">
-      
-      <Player class="player" title="Dealer hand" :cards="enemy" />
-      <Player class="player" title="Player hand" :cards="player" @setScore="setScore" />
+      <player class="player" title="Карты дилера" :cards="enemy" />
+      <player class="player" title="Ваши карты" :cards="player" @setScore="setScore" />
 
     </div>
 
     <div class="sidebar">
-      <Cards :cards="cards" />
+      <cards :cards="cards" />
 
       <div class="actions">
         <div class="actions__item">
-          <button class="btn" @click="hit">Hit</button>
+          <button :class="['btn', { disabled: !isGaming }]" @click="hit">Еще</button>
         </div>
         <div class="actions__item">
-          <button class="btn" @click="stand">Stand</button>
+          <button :class="['btn', { disabled: !isGaming }]" @click="stand">Стоп</button>
         </div>
       </div>
     </div>
+
+    <popup class="popup" v-model="startPlayPopup" title="Blackjack">
+      <button class="btn" @click="onPlayClick()">Начать</button>
+    </popup>
+
+    <popup class="popup" v-model="winnerPopup" :title="winnerPopupTitle">
+      <button class="btn" @click="onContinueClick()">Продолжить</button>
+    </popup>
     
   </div>
 </template>
 
 <script>
-  import { getCardScore, getRandomNum } from "./helpers"
+  import { getCardScore, getRandomNum, delay } from "./helpers"
   import { mapGetters } from "vuex"
   import Cards from "./components/Cards"
   import Player from "./components/Player"
@@ -40,6 +47,10 @@
         cards: [],
         enemy: [],
         player: [],
+        isGaming: false,
+        startPlayPopup: true,
+        winnerPopup: false,
+        winnerPopupTitle: "",
       }
     },
 
@@ -47,16 +58,43 @@
       ...mapGetters([
         'getCards',
       ]),
-    },
 
-    mounted(){
-      this.startGame()
+      getEnemyScores() {
+        return this.enemy.reduce((acc, card) => acc + card.score, 0)
+      },
+
+      getPlayerScores() {
+        return this.player.reduce((acc, card) => acc + card.score, 0)
+      },
     },
 
     methods: {
-      startGame(){
-        this.generateCards()
+      closePopups(){
+        this.startPlayPopup = false
+        this.winnerPopup = false
+      },
+
+      onPlayClick(){
+        this.closePopups()
+        this.startGame()
+      },
+
+      onContinueClick(){
+        this.closePopups()
+        this.startGame()
+      },
+
+      async startGame(){
+        this.isGaming = false
         this.clearCards()
+        if(this.cards.length < 4) {
+          this.generateCards()
+        }
+
+        await delay(1000)
+        this.giveStartingCardsToPlayers().then(() => {
+          this.isGaming = true
+        })
       },
 
       clearCards(){
@@ -65,64 +103,76 @@
       },
 
       hit(){
+        if(!this.isGaming) return null
+        if(!this.cards.length) return null
+        
         this.giveCardTo("player")
+        if(this.getMinScores("player") > this.maxScore) {
+          this.finish("enemy")
+        }
+      },
+
+      async finish(winner = "enemy") {
+        this.isGaming = false
+        await delay(1000)
+        const msgs = {
+          "enemy": "Дилер выиграл :(",
+          "player": "Ура!!! Ты выиграл!",
+          "nobody": "Ничья -_-",
+        }
+
+        this.winnerPopup = true
+        this.winnerPopupTitle = msgs[winner]
+      },
+
+      getMinScores(playerType) {
+        return this[playerType].reduce((acc, card) => Math.min(...card.scores) + acc, 0)
+      },
+
+      getMaxScores(playerType) {
+        return this[playerType].reduce((acc, card) => Math.max(...card.scores) + acc, 0)
       },
 
       stand(){
-        const max = getRandomNum(2, 4)
-        for(let i = 0; i < max; i++){
-          setTimeout(() => {
-            this.giveCardTo("enemy")
-
-            if (i + 1 == max) {
-              setTimeout(() => {
-                this.enemyChoosed()
-              }, 1500);
-            }
-          }, 100 * i);
+        if(!this.isGaming) return null
+        
+        while(this.getMinScores("enemy") + getRandomNum(2, 11) < this.maxScore){
+          if(!this.cards.length) break;
+          this.giveCardTo("enemy")
         }
+
+        this.checkWinner()
       },
 
-      enemyChoosed(){
-        const enemyScores = this.enemy.reduce((acc, card) => acc + card.score, 0)
-        const playerScores = this.player.reduce((acc, card) => acc + card.score, 0)
+      setEnemyMinScores() {
+        this.enemy.forEach(card => {
+          card.score = Math.min(...card.scores)
+        })
+      },
+
+      setEnemyMaxScores() {
+        this.enemy.forEach(card => {
+          card.score = Math.max(...card.scores)
+        })
+      },
+
+      checkWinner(){
+        if (this.getMaxScores("enemy") <= this.maxScore && this.getMaxScores("enemy") > this.getEnemyScores) {
+          this.setEnemyMaxScores()
+        } else if (this.getEnemyScores >= this.maxScore && this.getEnemyScores != this.getMinScores("enemy")) {
+          this.setEnemyMinScores()
+        }
 
         let winner = ''
-
-        // я особо логики не знаю, в этой игре, но, надеюсь, не прогадаю...
-        if (enemyScores != playerScores) {
-          if (enemyScores > this.maxScore && playerScores > this.maxScore) {
-            // если у обоих очки больше 21, то проигрывает тот, у кого больше же?
-            winner = enemyScores > playerScores ? 'player' : 'enemy'
-
-          } else if (enemyScores > this.maxScore || playerScores > this.maxScore) {
-            // хотя бы у одного игрока больше 21 очков
-            winner = enemyScores > this.maxScore ? 'player' : 'enemy'
-
-          } else {
-            // у обоих не более 21 очков
-            winner = enemyScores > playerScores ? 'enemy' : 'player'
-          }
-        }
-
-        if (winner) {
-          if (winner == 'player') {
-            alert("Вы выграли!")
-          } else {
-            alert("Вы проиграли!")
-          }
+        if(this.getEnemyScores === this.getPlayerScores) {
+          winner = "nobody"
+        } else if (this.getEnemyScores > this.maxScore) {
+          winner = 'player'
         } else {
-          alert("Ничья!")
+          winner = this.getEnemyScores > this.getPlayerScores ? 'enemy' : 'player'
         }
 
-        this.clearCards()
-        this.checkCards()
-      },
-
-      checkCards(){
-        if (!this.cards.length) {
-          this.generateCards()
-        }
+        this.finish(winner)
       },
 
       giveCardTo(playerType){
@@ -136,6 +186,33 @@
             card.opened = true
           }, 500);
         }
+      },
+
+      giveStartingCardsToPlayers() {
+        return new Promise( resolve => {
+          (async () => {
+            if(this.cards.length) {
+              this.giveCardTo("enemy")
+            }
+
+            if(this.cards.length) {
+              await delay(200)
+              this.giveCardTo("player")
+            }
+
+            if(this.cards.length) {
+              await delay(200)
+              this.giveCardTo("enemy")
+            }
+
+            if(this.cards.length) {
+              await delay(200)
+              this.giveCardTo("player")
+            }
+
+            resolve()
+          })()
+        })
       },
 
       getCardPosition(card){
@@ -167,11 +244,16 @@
     padding: 15px;
 
     display: flex;
+    justify-content: center;
   }
 
   .game {
     min-width: 555px;
     margin-right: 50px;
+
+    @media screen and (max-width: 900px) {
+      min-width: 0;
+    }
   }
 
   .actions {

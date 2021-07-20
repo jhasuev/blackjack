@@ -4,8 +4,8 @@
       v-for="(card, i) in cards"
       :key="i"
       :style="{
-        marginTop: `${i}px`,
-        marginLeft: `${i}px`,
+        marginTop: `${i / 2}px`,
+        marginLeft: `${i / 2}px`,
       }"
       :card="card"
       :class="`cards__item  js-card-${card.id}`"

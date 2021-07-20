@@ -1,5 +1,5 @@
 <template>
-  <div :class="['card', { opened: !opened }]">
+  <div :class="['flepper', { opened: !opened }]">
     <div class="content">
       <div class="front">
         <slot name="front" />
@@ -21,13 +21,18 @@
 </script>
 
 <style lang="scss" scoped>
-  .card {
+  .flepper {
     perspective: 500px;
 
     position: relative;
     width: 120px;
     height: 170.38px;
     font-size: 0;
+
+    @media screen and (max-width: 900px) {
+      width: 81px;
+      height: 115px;
+    }
   }
 
   .content {
@@ -39,7 +44,7 @@
     transform-style: preserve-3d;
   }
 
-  .card.opened .content {
+  .flepper.opened .content {
     transform: rotateY(180deg);
     transition: transform 0.5s;
   }

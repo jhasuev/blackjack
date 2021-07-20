@@ -8,3 +8,6 @@ export const getCardScore = (cards, name) => {
   return scores[getRandomNum(0, scores.length - 1)]
 }
 
+export const delay = time => {
+  return new Promise(resolve => setTimeout(() => resolve(), time))
+}
