@@ -21,4 +21,14 @@ body {
   &:active {
     opacity: 0.8;
   }
+
+  &.disabled {
+    filter: grayscale(1);
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 900px) {
+    font-size: 20px;
+    padding: 5px 10px;
+  }
 }

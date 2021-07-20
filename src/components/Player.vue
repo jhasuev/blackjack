@@ -64,4 +64,31 @@
     }
   }
 
+  @media screen and (max-width: 900px) {
+    .player {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      & + & {
+        margin-top: 50px;
+      }
+
+      &__info {
+        padding-left: 0;
+        padding-top: 5px;
+        font-size: 20px;
+      }
+      &__cards {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        padding-left: 63px;
+
+        &-item {
+          margin-left: -63px;
+        }
+      }
+    }
+  }
+
 </style>
