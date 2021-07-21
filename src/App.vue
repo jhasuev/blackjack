@@ -48,6 +48,7 @@
         enemy: [],
         player: [],
         isGaming: false,
+        isStarting: false,
         startPlayPopup: true,
         winnerPopup: false,
         winnerPopupTitle: "",
@@ -85,6 +86,8 @@
       },
 
       async startGame(){
+        if(this.isStarting) return null
+        this.isStarting = true
         this.isGaming = false
         this.clearCards()
         if(this.cards.length < 4) {
@@ -92,9 +95,9 @@
         }
 
         await delay(1000)
-        this.giveStartingCardsToPlayers().then(() => {
-          this.isGaming = true
-        })
+        await this.giveStartingCardsToPlayers()
+        this.isGaming = true
+        this.isStarting = false
       },
 
       clearCards(){
@@ -107,7 +110,9 @@
         if(!this.cards.length) return null
         
         this.giveCardTo("player")
-        if(this.getMinScores("player") > this.maxScore) {
+        if(this.getPlayerScores == this.maxScore) {
+          this.finish("player")
+        } else if(this.getMinScores("player") > this.maxScore) {
           this.finish("enemy")
         }
       },
@@ -208,6 +213,14 @@
             if(this.cards.length) {
               await delay(200)
               this.giveCardTo("player")
+            }
+
+            await delay(200)
+            
+            if(this.getEnemyScores == this.maxScore) {
+              this.finish("enemy")
+            } else if(this.getPlayerScores == this.maxScore) {
+              this.finish("player")
             }
 
             resolve()
